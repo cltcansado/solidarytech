@@ -1,0 +1,65 @@
+name: Terraform — infra/envs/production
+
+on:
+  pull_request:
+    paths: ["infra/**"]
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Ação a executar"
+        required: true
+        default: "plan"
+        type: choice
+        options: ["plan", "apply", "destroy"]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  TF_VAR_lab_role_arn: ${{ secrets.LAB_ROLE_ARN }}
+  TF_VAR_rds_master_password: ${{ secrets.RDS_MASTER_PASSWORD }}
+  TF_VAR_gitops_repo_url: ${{ secrets.GITOPS_REPO_URL }}
+  TF_VAR_velero_bucket_suffix: ${{ secrets.VELERO_BUCKET_SUFFIX }}
+  TF_VAR_datadog_api_key: ${{ secrets.DATADOG_API_KEY }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/envs/production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: "1.7.5" }
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.TFSTATE_BUCKET }}" \
+            -backend-config="key=production/terraform.tfstate" \
+            -backend-config="region=us-east-1" \
+            -backend-config="dynamodb_table=${{ secrets.TFSTATE_LOCK_TABLE }}"
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        if: github.event_name == 'pull_request' || inputs.action == 'plan'
+        run: terraform plan -no-color -out=tfplan
+
+      # `apply`/`destroy` só rodam via workflow_dispatch manual — infraestrutura de nuvem
+      # real não é criada/destruída automaticamente por um merge, mesmo respeitando a
+      # "regra de ouro" de tudo-via-IaC.
+      - name: Terraform Apply
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'apply'
+        run: terraform apply -auto-approve -no-color
+
+      - name: Terraform Destroy
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'destroy'
+        run: terraform destroy -auto-approve -no-color

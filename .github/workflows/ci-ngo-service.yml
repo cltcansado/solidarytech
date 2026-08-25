@@ -1,0 +1,122 @@
+name: CI — ngo-service
+
+on:
+  push:
+    branches: [main]
+    paths: ["apps/ngo-service/**", ".github/workflows/ci-ngo-service.yml"]
+  pull_request:
+    paths: ["apps/ngo-service/**"]
+  workflow_dispatch: {} # permite disparo manual (ex: primeiro build, sem alterar código)
+
+env:
+  SERVICE: ngo-service
+  IMAGE: ${{ secrets.ECR_REGISTRY }}/solidarytech/ngo-service
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/ngo-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -r requirements.txt pytest
+      - run: pytest -q
+
+  # --- DevSecOps: SAST (Sonar) + SCA/filesystem scan (Trivy) ---
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: test
+    env:
+      # o validador estrito do workflow_dispatch (dispatch via API) rejeita `secrets` referenciado
+      # direto num `if:` de step ("Unrecognized named-value: 'secrets'") mesmo sendo válido em
+      # runs disparadas por push — indireciona por env: para funcionar nos dois gatilhos.
+      SONAR_TOKEN_SET: ${{ secrets.SONAR_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Trivy — filesystem/dependência (SCA)
+        uses: aquasecurity/trivy-action@v0.24.0
+        with:
+          scan-type: fs
+          scan-ref: apps/ngo-service
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+
+      - name: SonarCloud — SAST
+        if: ${{ env.SONAR_TOKEN_SET == 'true' }} # pula sem quebrar o pipeline enquanto a conta Sonar não estiver configurada
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: apps/ngo-service
+          args: >
+            -Dsonar.projectKey=solidarytech-ngo-service
+            -Dsonar.organization=${{ secrets.SONAR_ORG }}
+
+  build-and-push:
+    runs-on: ubuntu-latest
+    needs: security-scan
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: meta
+        run: echo "tag=${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+
+      - name: Configurar credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }} # AWS Academy: token de sessão temporário
+          aws-region: us-east-1
+
+      - name: Login no ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build da imagem
+        run: docker build -t "$IMAGE:${{ steps.meta.outputs.tag }}" apps/ngo-service
+
+      - name: Trivy — imagem de container (relatório, não bloqueia)
+        # exit-code 0 de propósito: os achados aqui são pacotes de SO herdados da imagem
+        # base gcr.io/distroless/python3-debian12 (mantida pelo Google, fora do nosso
+        # controle via requirements.txt) -- bloquear o pipeline por isso teria o mesmo efeito
+        # de nunca conseguir buildar até o Google atualizar a base. O gate que bloqueia de
+        # verdade é o scan de filesystem/dependência acima (nossas libs, nosso controle).
+        uses: aquasecurity/trivy-action@v0.24.0
+        with:
+          image-ref: "${{ env.IMAGE }}:${{ steps.meta.outputs.tag }}"
+          severity: CRITICAL,HIGH
+          exit-code: "0"
+
+      - name: Push para o ECR
+        run: docker push "$IMAGE:${{ steps.meta.outputs.tag }}"
+
+  gitops-bump:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+      - name: Clona o repo gitops
+        run: git clone "https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/cltcansado/solidarytech-gitops.git" gitops-repo
+
+      - name: Atualiza a tag da imagem e commita (dispara o sync do ArgoCD; retry para runs concorrentes de outros serviços)
+        working-directory: gitops-repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          for i in 1 2 3 4 5; do
+            sed -i "s|image: .*ngo-service:.*|image: ${{ env.IMAGE }}:${{ needs.build-and-push.outputs.image_tag }}|" \
+              apps/ngo-service/deployment.yaml
+            git add apps/ngo-service/deployment.yaml
+            git diff --cached --quiet && break
+            git commit -m "ci(ngo-service): bump image to ${{ needs.build-and-push.outputs.image_tag }}"
+            git push && break
+            git fetch origin main && git reset --hard origin/main
+            sleep $((RANDOM % 4 + 1))
+          done
