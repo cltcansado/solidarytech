@@ -1,0 +1,50 @@
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+crash.*.log
+.terraform.lock.hcl
+tfplan*
+*.tfplan
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Go
+apps/donation-service/donation-service
+apps/donation-service/donation-service.exe
+*.exe
+
+# Node (k6, tooling)
+node_modules/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Secrets locais
+kubeconfig*
+*.pem
+*.key
+
+# Config local de ferramentas de desenvolvimento, nunca compartilhada no repo
+.claude/
+
+# Notas de execução/roteiro pessoais — não fazem parte do entregável
+/env/
+
+# Cache local do provider Helm (Terraform) - isolado por projeto, ver infra/envs/production/versions.tf
+.helm/
