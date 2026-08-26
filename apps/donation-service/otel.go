@@ -35,7 +35,7 @@ func setupTracing(ctx context.Context) func(context.Context) error {
 		otlptracegrpc.WithInsecure(),
 	)
 	if err != nil {
-		log.Printf("aviso: OTel exporter indisponível (%v) — seguindo sem tracing", err)
+		log.Printf("aviso: OTel exporter indisponível (%v) - seguindo sem tracing", err)
 		return func(context.Context) error { return nil }
 	}
 

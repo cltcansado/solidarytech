@@ -4,7 +4,7 @@ resource "aws_ecr_repository" "this" {
   image_tag_mutability = "IMMUTABLE" # rastreabilidade: tag = SHA do commit, nunca sobrescrita
 
   image_scanning_configuration {
-    scan_on_push = true # SCA de imagem — parte da esteira DevSecOps (complementa Trivy no CI)
+    scan_on_push = true # SCA de imagem - parte da esteira DevSecOps (complementa Trivy no CI)
   }
 
   tags = merge(var.tags, { Component = each.value })

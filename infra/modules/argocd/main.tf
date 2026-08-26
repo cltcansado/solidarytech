@@ -1,5 +1,5 @@
 # Instala o ArgoCD via Helm (Terraform) e aplica o "app-of-apps" raiz via `kubectl_manifest`
-# (provider gavinbunney/kubectl, não hashicorp/kubernetes) — ou seja, o ÚNICO objeto do
+# (provider gavinbunney/kubectl, não hashicorp/kubernetes) - ou seja, o ÚNICO objeto do
 # cluster que nasce fora do fluxo 100% GitOps é este bootstrap inicial, e mesmo assim ele é
 # aplicado pelo Terraform, nunca por um `kubectl apply` manual de humano. A partir daqui, o
 # próprio ArgoCD assume: tudo que existe em gitops/ é sincronizado automaticamente
@@ -7,7 +7,7 @@
 #
 # Por que kubectl_manifest e não kubernetes_manifest (hashicorp/kubernetes): o recurso
 # `kubernetes_manifest` do provider oficial valida a CRD do objeto (aqui, "Application" do
-# argoproj.io) contra a API do cluster NO MOMENTO DO PLAN — mas essa CRD só existe depois que
+# argoproj.io) contra a API do cluster NO MOMENTO DO PLAN - mas essa CRD só existe depois que
 # o Helm instala o ArgoCD, criando uma dependência circular impossível de resolver num único
 # `terraform plan`. `kubectl_manifest` não faz essa validação client-side, então tolera aplicar
 # o Application antes/junto da instalação do CRD (com o depends_on abaixo garantindo a ordem
@@ -20,7 +20,7 @@ resource "kubernetes_namespace" "argocd" {
 }
 
 # Credencial do repositório GitOps, registrada como Secret seguindo a convenção do ArgoCD
-# (label argocd.argoproj.io/secret-type=repository) — necessária porque o repositório é
+# (label argocd.argoproj.io/secret-type=repository) - necessária porque o repositório é
 # privado. Declarada aqui via Terraform (não via `argocd repo add` manual) para manter a
 # regra de ouro de "nada de configuração manual fora de IaC/GitOps".
 resource "kubernetes_secret" "repo_credentials" {

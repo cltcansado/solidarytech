@@ -1,10 +1,10 @@
 # Uma única instância RDS Postgres hospedando os 2 bancos (ngo_db, donation_db) via
-# multiplas databases lógicas — decisão de FinOps: 2 instâncias `db.t3.micro` custariam o
+# multiplas databases lógicas - decisão de FinOps: 2 instâncias `db.t3.micro` custariam o
 # dobro por ~nenhum ganho de isolamento real neste estágio (ver docs/FINOPS-FORECAST.md).
 # Isolamento lógico (db diferente + usuário/schema) é suficiente para o hackathon.
 #
 # `ngo_db` é criado pelo próprio RDS (`db_name`). `donation_db` é criado por um Job do
-# Kubernetes (PreSync hook do ArgoCD, ver gitops/apps/donation-service/db-init-job.yaml) —
+# Kubernetes (PreSync hook do ArgoCD, ver gitops/apps/donation-service/db-init-job.yaml) -
 # mantém a criação de schema dentro do fluxo GitOps, sem psql manual e sem exigir que quem
 # roda `terraform apply` tenha rede até dentro da VPC privada.
 
@@ -23,7 +23,7 @@ resource "aws_security_group" "rds" {
 
 resource "aws_security_group_rule" "allow_postgres_from_eks" {
   # for_each por índice (não por valor): o SG do EKS só é conhecido após o apply do módulo
-  # eks nesta mesma execução — toset(var.allowed_security_group_ids) quebraria o plan porque
+  # eks nesta mesma execução - toset(var.allowed_security_group_ids) quebraria o plan porque
   # os VALORES do set ficariam "known after apply". Índices de lista são conhecidos em plan
   # time mesmo quando os valores não são; só as chaves do for_each precisam ser estáticas.
   for_each                 = { for idx, sg_id in var.allowed_security_group_ids : idx => sg_id }
@@ -68,7 +68,7 @@ resource "aws_db_instance" "this" {
   skip_final_snapshot     = true
   copy_tags_to_snapshot   = true
 
-  performance_insights_enabled = false # custo extra — não justificado no volume do hackathon
+  performance_insights_enabled = false # custo extra - não justificado no volume do hackathon
 
   tags = var.tags
 }

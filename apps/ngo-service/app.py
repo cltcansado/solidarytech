@@ -26,7 +26,13 @@ if not DATABASE_URL:
     sys.exit(1)
 
 try:
-    pool = SimpleConnectionPool(1, 10, dsn=DATABASE_URL)
+    # minconn=0 (não 1): com 1, o construtor abre uma conexão de verdade na hora - se o RDS
+    # estiver fora nesse instante, a exceção cai no except abaixo e o processo morre (mesmo
+    # efeito cascata do achado #13 em donation-service: livenessProbe mata o pod, o substituto
+    # não sobe, CrashLoopBackOff enquanto o banco estiver indisponível). Com 0, o pool nasce
+    # vazio e só conecta de verdade no primeiro getconn() - startup nunca falha por causa do
+    # banco, e cada handler já trata erro de conexão por request (retorna 500/503).
+    pool = SimpleConnectionPool(0, 10, dsn=DATABASE_URL)
     log.info("Pool de conexões com o PostgreSQL (ngo-service) inicializado.")
 except Exception as e:
     log.critical(f"Erro ao conectar ao PostgreSQL: {e}")
@@ -64,7 +70,10 @@ def metrics():
 
 @app.route('/health')
 def health():
-    # readiness real: valida se o pool consegue emprestar uma conexão
+    # readinessProbe: valida se o pool consegue emprestar uma conexão. NÃO usar como
+    # livenessProbe (ver /live) - matar o processo por causa do banco fora não ajuda em nada
+    # e ainda impede o pod de sair do ar de forma limpa (achado #13, mesmo padrão do
+    # donation-service).
     try:
         conn = pool.getconn()
         pool.putconn(conn)
@@ -72,6 +81,12 @@ def health():
     except Exception as e:
         log.error(f"Health check falhou: {e}")
         return jsonify({"status": "degraded", "service": "ngo-service"}), 503
+
+
+@app.route('/live')
+def live():
+    # livenessProbe: só confirma que o processo Flask está respondendo, sem checar o banco.
+    return jsonify({"status": "ok", "service": "ngo-service"})
 
 
 @app.route('/ngos', methods=['POST'])

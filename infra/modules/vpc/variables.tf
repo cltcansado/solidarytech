@@ -25,7 +25,7 @@ variable "private_subnet_cidrs" {
 }
 
 variable "single_nat_gateway" {
-  description = "Usa 1 NAT Gateway só (em vez de 1 por AZ) — economia FinOps para ambiente de estudo/hackathon"
+  description = "Usa 1 NAT Gateway só (em vez de 1 por AZ) - economia FinOps para ambiente de estudo/hackathon"
   type        = bool
   default     = true
 }

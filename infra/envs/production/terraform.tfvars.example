@@ -1,4 +1,4 @@
-# Copie para terraform.tfvars e preencha (NUNCA commitar terraform.tfvars com segredos reais —
+# Copie para terraform.tfvars e preencha (NUNCA commitar terraform.tfvars com segredos reais -
 # já está no .gitignore). Segredos (senha do RDS) devem ir via TF_VAR_rds_master_password,
 # não neste arquivo.
 

@@ -30,14 +30,14 @@ variable "allocated_storage" {
 
 variable "engine_version" {
   # 16.3 saiu de disponibilidade no RDS (ver `aws rds describe-db-engine-versions --engine
-  # postgres`) — ajustado para a patch mais recente da mesma minor version disponível no
+  # postgres`) - ajustado para a patch mais recente da mesma minor version disponível no
   # momento desta entrega.
   type    = string
   default = "16.15"
 }
 
 variable "multi_az" {
-  description = "Multi-AZ aumenta RTO/RPO de failover automático, mas dobra o custo do RDS — desligado por padrão no hackathon (custo), ligar em produção real (ver PCN)"
+  description = "Multi-AZ aumenta RTO/RPO de failover automático, mas dobra o custo do RDS - desligado por padrão no hackathon (custo), ligar em produção real (ver PCN)"
   type        = bool
   default     = false
 }

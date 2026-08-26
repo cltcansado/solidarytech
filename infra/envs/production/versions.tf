@@ -21,7 +21,7 @@ terraform {
   }
 
   # Preencha com o bucket/tabela criados em infra/bootstrap (terraform output lá).
-  # Mantido comentado no repo — cada ambiente informa via `-backend-config` no CI
+  # Mantido comentado no repo - cada ambiente informa via `-backend-config` no CI
   # (ver .github/workflows/terraform.yml) para não hardcodar nome de bucket específico
   # de uma conta AWS Academy no código versionado.
   backend "s3" {
@@ -42,7 +42,7 @@ provider "aws" {
   }
 }
 
-# Provider AWS secundário — usado apenas pelo bucket de backup do Velero (Opção A de DR,
+# Provider AWS secundário - usado apenas pelo bucket de backup do Velero (Opção A de DR,
 # cross-region por definição). Ver docs/PCN-DR.md.
 provider "aws" {
   alias  = "dr"
@@ -76,7 +76,7 @@ provider "helm" {
   repository_cache       = "${path.module}/.helm/cache"
 }
 
-# Usado só para o Application (CRD do ArgoCD) do app-of-apps — ver comentário em
+# Usado só para o Application (CRD do ArgoCD) do app-of-apps - ver comentário em
 # infra/modules/argocd/main.tf sobre por que kubectl_manifest e não kubernetes_manifest.
 provider "kubectl" {
   host                   = module.eks.cluster_endpoint

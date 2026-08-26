@@ -1,9 +1,9 @@
 # Risk acceptance documentada (não é "ignorar por preguiça"):
 #
-# CVE-2026-32286 (github.com/jackc/pgproto3/v2 v2.3.3, HIGH) — DoS via servidor PostgreSQL
+# CVE-2026-32286 (github.com/jackc/pgproto3/v2 v2.3.3, HIGH) - DoS via servidor PostgreSQL
 # malicioso. Não existe versão corrigida do pgproto3/v2 disponível (v2.3.3 é a mais recente
 # da linha v2, usada pelo driver pgx v4 que este serviço usa). O vetor de ataque exige que o
-# SERVIDOR Postgres seja malicioso/comprometido — nosso servidor é o RDS gerenciado pela AWS
+# SERVIDOR Postgres seja malicioso/comprometido - nosso servidor é o RDS gerenciado pela AWS
 # na mesma conta/VPC, não um Postgres de terceiros não confiável. Risco aceito até:
 #   (a) o mantenedor do pgproto3/v2 publicar uma versão corrigida, ou
 #   (b) migração para pgx v5 (breaking change de API, fora do escopo desta entrega).

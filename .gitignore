@@ -43,7 +43,7 @@ kubeconfig*
 # Config local de ferramentas de desenvolvimento, nunca compartilhada no repo
 .claude/
 
-# Notas de execução/roteiro pessoais — não fazem parte do entregável
+# Notas de execução/roteiro pessoais - não fazem parte do entregável
 /env/
 infra/envs/production/apply-*.log
 

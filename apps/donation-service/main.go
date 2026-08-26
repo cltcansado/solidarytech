@@ -82,15 +82,15 @@ func main() {
 	}
 	db.SetMaxOpenConns(10)
 	db.SetMaxIdleConns(5)
-	// Não usa log.Fatal aqui de propósito: se o RDS estiver temporariamente indisponível no
+	// Não usa log.Fatal aqui por design: se o RDS estiver temporariamente indisponível no
 	// boot (failover, manutenção, restart do próprio banco), o processo ainda sobe e responde
-	// HTTP — /health reporta "degraded" (503) até a conexão voltar, e o readinessProbe tira o
+	// HTTP - /health reporta "degraded" (503) até a conexão voltar, e o readinessProbe tira o
 	// pod do Service sem matar o container. Antes, um log.Fatal aqui criava um efeito cascata:
 	// o livenessProbe (que também batia em /health) matava pods saudáveis por causa do banco,
-	// e o pod novo nunca conseguia nem terminar de subir enquanto o banco estivesse fora —
+	// e o pod novo nunca conseguia nem terminar de subir enquanto o banco estivesse fora -
 	// CrashLoopBackOff permanente pela duração inteira da indisponibilidade do RDS.
 	if err := db.Ping(); err != nil {
-		log.Printf("Aviso: banco de dados inacessível no boot (%v) — subindo mesmo assim, /health reportará degraded", err)
+		log.Printf("Aviso: banco de dados inacessível no boot (%v) - subindo mesmo assim, /health reportará degraded", err)
 	} else {
 		log.Println("Conectado ao PostgreSQL (donation-service).")
 	}
@@ -141,7 +141,7 @@ func (w *statusWriter) WriteHeader(code int) {
 }
 
 // HealthHandler é o alvo do readinessProbe: reflete a saúde real das dependências (banco).
-// Um 503 aqui tira o pod do Service — não deve, e não é, usado como livenessProbe (ver
+// Um 503 aqui tira o pod do Service - não deve, e não é, usado como livenessProbe (ver
 // LiveHandler): matar o processo não resolve o banco estar fora, só causa restart-storm.
 func (a *App) HealthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -230,7 +230,7 @@ func (a *App) DonationHandler(w http.ResponseWriter, r *http.Request) {
 
 // sendNotificationEventWithRetry tenta publicar o evento até 3 vezes com backoff exponencial.
 // Se todas falharem, incrementa métrica que alimenta alerta de SRE (o dado da doação em si
-// já está persistido no Postgres — o que se perde é só a notificação assíncrona).
+// já está persistido no Postgres - o que se perde é só a notificação assíncrona).
 func (a *App) sendNotificationEventWithRetry(ctx context.Context, d Donation) {
 	body, _ := json.Marshal(d)
 	backoff := 200 * time.Millisecond

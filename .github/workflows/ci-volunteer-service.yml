@@ -1,4 +1,4 @@
-name: CI — volunteer-service
+name: CI - volunteer-service
 
 on:
   push:
@@ -32,7 +32,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Trivy — filesystem/dependência (SCA)
+      - name: Trivy - filesystem/dependência (SCA)
         uses: aquasecurity/trivy-action@v0.24.0
         with:
           scan-type: fs
@@ -40,7 +40,7 @@ jobs:
           severity: CRITICAL,HIGH
           exit-code: "1"
 
-      - name: SonarCloud — SAST
+      - name: SonarCloud - SAST
         if: ${{ env.SONAR_TOKEN_SET == 'true' }}
         uses: SonarSource/sonarcloud-github-action@master
         env:
@@ -76,8 +76,8 @@ jobs:
       - name: Build da imagem
         run: docker build -t "$IMAGE:${{ steps.meta.outputs.tag }}" apps/volunteer-service
 
-      - name: Trivy — imagem de container (relatório, não bloqueia)
-        # exit-code 0 de propósito: ver justificativa em ci-ngo-service.yml (mesma base
+      - name: Trivy - imagem de container (relatório, não bloqueia)
+        # exit-code 0 intencional: ver justificativa em ci-ngo-service.yml (mesma base
         # distroless, mesmos achados são pacotes de SO fora do nosso controle).
         uses: aquasecurity/trivy-action@v0.24.0
         with:

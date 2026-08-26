@@ -35,6 +35,6 @@ output "velero_bucket_name" {
 }
 
 output "configure_kubectl" {
-  description = "Comando para configurar o kubeconfig local (única vez, por operador humano — não é deploy, é acesso de leitura/debug)"
+  description = "Comando para configurar o kubeconfig local (única vez, por operador humano - não é deploy, é acesso de leitura/debug)"
   value       = "aws eks update-kubeconfig --name ${module.eks.cluster_name} --region ${var.aws_region}"
 }

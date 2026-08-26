@@ -1,9 +1,9 @@
 """
-healer-service — automação de resposta a incidentes (self-healing) da SolidaryTech.
+healer-service - automação de resposta a incidentes (self-healing) da SolidaryTech.
 
 Recebe webhooks do Alertmanager (formato padrão do "webhook_config") quando um alerta
 de SRE dispara (ex: DonationServiceHighErrorRate, DonationServiceCrashLooping) e executa
-um `rollout restart` no Deployment afetado via API do Kubernetes — sem `kubectl` manual e
+um `rollout restart` no Deployment afetado via API do Kubernetes - sem `kubectl` manual e
 sem intervenção humana, reduzindo o MTTR do donation-service.
 
 Design deliberadamente conservador:
@@ -82,7 +82,7 @@ def alertmanager_webhook():
         deployment = ALERT_TO_DEPLOYMENT.get(alertname)
 
         if not deployment:
-            log.info(f"Alerta '{alertname}' recebido sem ação de auto-healing mapeada — ignorado.")
+            log.info(f"Alerta '{alertname}' recebido sem ação de auto-healing mapeada - ignorado.")
             continue
 
         result = _restart_deployment(deployment, alertname)
@@ -96,17 +96,17 @@ def _restart_deployment(deployment: str, alertname: str) -> dict:
     last = _last_action.get(deployment, 0)
 
     if now - last < COOLDOWN_SECONDS:
-        log.info(f"Cooldown ativo para '{deployment}' ({int(now - last)}s desde a última ação) — pulando.")
+        log.info(f"Cooldown ativo para '{deployment}' ({int(now - last)}s desde a última ação) - pulando.")
         HEAL_ACTIONS_TOTAL.labels(deployment, alertname, "skipped_cooldown").inc()
         return {"deployment": deployment, "action": "skipped_cooldown"}
 
     if _k8s_apps is None:
-        log.error("Cliente Kubernetes não inicializado — não é possível executar rollout restart.")
+        log.error("Cliente Kubernetes não inicializado - não é possível executar rollout restart.")
         HEAL_ACTIONS_TOTAL.labels(deployment, alertname, "error_no_client").inc()
         return {"deployment": deployment, "action": "error_no_client"}
 
     try:
-        # equivalente a `kubectl rollout restart deployment/<nome>`, mas via API — sem shell manual.
+        # equivalente a `kubectl rollout restart deployment/<nome>`, mas via API - sem shell manual.
         now_iso = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S%z')
         body = {
             "spec": {

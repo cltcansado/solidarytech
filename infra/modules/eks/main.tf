@@ -2,7 +2,7 @@
 # oficial tenta criar IAM roles/policies e (opcionalmente) o OIDC provider para IRSA por
 # padrão, o que quebra sob as restrições da AWS Academy (iam:CreateRole/CreatePolicy/
 # CreateOpenIDConnectProvider negados na LabRole). Usando os recursos aws_eks_* diretamente,
-# controlamos exatamente quais chamadas IAM são feitas — nenhuma.
+# controlamos exatamente quais chamadas IAM são feitas - nenhuma.
 #
 # Consequência assumida: sem IRSA. Os pods dos serviços que falam com SQS/DynamoDB usam as
 # permissões da role do NÓ (LabRole), não uma role por Service Account.
@@ -39,13 +39,13 @@ resource "aws_eks_cluster" "this" {
   tags = var.tags
 }
 
-# Launch template só para ajustar o IMDS (metadata_options) — sem isso, os pods (que rodam
+# Launch template só para ajustar o IMDS (metadata_options) - sem isso, os pods (que rodam
 # em um namespace de rede próprio via VPC CNI, não no namespace do host) não alcançam o
 # metadata service da instância, porque o hop limit default (1) só permite acesso a partir
 # do próprio namespace do host. QUALQUER coisa que dependa da LabRole via IMDS nos pods
 # (donation-service/SQS, volunteer-service/DynamoDB, healer-service, EBS CSI driver, Velero)
-# quebra sem isso — sintoma observado: "no EC2 IMDS role found" nos logs do container.
-# instance_type/image_id ficam de propósito FORA do launch template: o node group continua
+# quebra sem isso - sintoma observado: "no EC2 IMDS role found" nos logs do container.
+# instance_type/image_id ficam fora do launch template de forma intencional: o node group continua
 # controlando isso via `instance_types` (permitido pela AWS quando o launch template não
 # define instance_type/image_id).
 resource "aws_launch_template" "node" {
@@ -90,7 +90,7 @@ resource "aws_eks_node_group" "on_demand" {
 }
 
 # Node group Spot para cargas não-críticas (ngo-service, volunteer-service, stack de
-# observabilidade) — recomendação prática de otimização nativa de nuvem citada no
+# observabilidade) - recomendação prática de otimização nativa de nuvem citada no
 # relatório de FinOps (docs/FINOPS-FORECAST.md).
 resource "aws_eks_node_group" "spot" {
   count = var.enable_spot_node_group ? 1 : 0
@@ -127,7 +127,7 @@ resource "aws_eks_node_group" "spot" {
 }
 
 # Sem este addon, NENHUM PersistentVolumeClaim é atendido no cluster (fica "Pending" para
-# sempre) — EKS não instala o EBS CSI driver por padrão. Necessário para os volumes do
+# sempre) - EKS não instala o EBS CSI driver por padrão. Necessário para os volumes do
 # Prometheus/Grafana/Loki (observabilidade) e do Velero (backup a nível de arquivo).
 # Sem IRSA disponível (restrição AWS Academy), não é passado
 # `service_account_role_arn`: o driver cai no fallback de usar a role do NÓ (LabRole) via

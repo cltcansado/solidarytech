@@ -17,7 +17,7 @@ separado: [`solidarytech-gitops`](https://github.com/cltcansado/solidarytech-git
 | CI/CD | pipelines por serviço (testes, Trivy, Sonar, build, push, bump no repo gitops) |
 | GitOps | ArgoCD app-of-apps no repo `solidarytech-gitops` |
 | Observabilidade/APM | Prometheus, Grafana, Loki, OTel Collector, Datadog |
-| Self-healing | `healer-service` — remediação automática via webhook do Alertmanager |
+| Self-healing | `healer-service` - remediação automática via webhook do Alertmanager |
 
 Documentação de arquitetura e das frentes de SRE/FinOps/ITSM-AIOps/DR fica em `docs/`.
 
@@ -50,7 +50,7 @@ docker-compose.yml
 ## Correções feitas no código-base original
 
 - `volunteer-service/app.py` usava `boto3.dynamodb.conditions.Attr` sem importar o submódulo
-  — quebrava em runtime no `GET /volunteers/<ngo_id>`. Corrigido, com teste de regressão em
+  - quebrava em runtime no `GET /volunteers/<ngo_id>`. Corrigido, com teste de regressão em
   `apps/volunteer-service/tests/`.
 - DLQ no SQS + retry com backoff na publicação de eventos do `donation-service` (o código-base
   original era fire-and-forget, sem tratamento de falha).

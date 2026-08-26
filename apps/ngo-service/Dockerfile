@@ -6,7 +6,7 @@ COPY requirements.txt .
 # --target (não --prefix): gera um diretório flat autocontido. Necessário porque o Python
 # do builder (CPython oficial) usa a convenção "site-packages", mas o Python de SISTEMA do
 # distroless/python3-debian12 (Debian, na stage runtime) usa a convenção Debian
-# "dist-packages" — copiar /install direto para /usr/local faria o interpretador da runtime
+# "dist-packages" - copiar /install direto para /usr/local faria o interpretador da runtime
 # nunca achar os pacotes ("No module named gunicorn"). --target + PYTHONPATH explícito
 # ignora essa diferença de convenção por completo.
 RUN pip install --no-cache-dir --target=/deps -r requirements.txt

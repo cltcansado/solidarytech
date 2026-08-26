@@ -1,4 +1,4 @@
-# Bucket S3 de destino dos backups do Velero (Opção A de DR — ver docs/PCN-DR.md).
+# Bucket S3 de destino dos backups do Velero (Opção A de DR - ver docs/PCN-DR.md).
 # Provisionado por padrão em região diferente do cluster (ver var region no provider,
 # configurado no root module com alias `dr`), cumprindo o requisito de
 # "backup cross-region para um bucket externo".

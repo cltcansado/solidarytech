@@ -1,6 +1,6 @@
-// k6 (https://k6.io) — gera tráfego real no donation-service para:
+// k6 (https://k6.io) - gera tráfego real no donation-service para:
 //  1) alimentar as Golden Metrics com dados reais (não sintéticos) para o Dashboard SRE;
-//  2) treinar a linha de base do AIOps/Watchdog (Etapa E11 — precisa de tráfego real e tempo
+//  2) treinar a linha de base do AIOps/Watchdog (Etapa E11 - precisa de tráfego real e tempo
 //     rodando para aprender o comportamento "normal" antes de detectar anomalia);
 //  3) gerar dado real de CPU/Mem para o exercício de Rightsizing (Etapa E13).
 //
@@ -25,7 +25,7 @@ export const options = {
       ],
     },
     // Pico imprevisível de acesso (citado no enunciado: "a plataforma ganhou destaque em
-    // rede nacional") — dispara depois do tráfego normal já ter estabilizado a baseline.
+    // rede nacional") - dispara depois do tráfego normal já ter estabilizado a baseline.
     pico_viral: {
       executor: "ramping-vus",
       startVUs: 0,

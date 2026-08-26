@@ -73,9 +73,9 @@ module "velero_backend" {
 }
 
 # StorageClass padrão do cluster, backeada pelo EBS CSI driver (module.eks.aws_eks_addon.
-# ebs_csi_driver) — sem isso, todo PersistentVolumeClaim (Prometheus, Grafana, Loki, Velero)
+# ebs_csi_driver) - sem isso, todo PersistentVolumeClaim (Prometheus, Grafana, Loki, Velero)
 # fica "Pending" para sempre. A `gp2` que o EKS deixa como leftover usa o provisioner in-tree
-# antigo (`kubernetes.io/aws-ebs`), não o CSI driver — substituída aqui por uma default real.
+# antigo (`kubernetes.io/aws-ebs`), não o CSI driver - substituída aqui por uma default real.
 resource "kubernetes_storage_class_v1" "gp3_default" {
   count = var.enable_argocd_bootstrap ? 1 : 0
 
@@ -101,7 +101,7 @@ resource "kubernetes_storage_class_v1" "gp3_default" {
 # Namespace da aplicação + Secrets com os dados de conexão (RDS/SQS/DynamoDB/Redis) gerados
 # pelo próprio Terraform. Decisão de arquitetura: segredos são responsabilidade do Terraform
 # (que já sabe endpoint/senha porque acabou de provisionar o recurso), workloads são
-# responsabilidade do GitOps/ArgoCD — os Deployments em gitops/apps/*/ só referenciam o NOME
+# responsabilidade do GitOps/ArgoCD - os Deployments em gitops/apps/*/ só referenciam o NOME
 # do Secret via secretKeyRef, nunca o valor. Isso evita commitar qualquer credencial no Git,
 # sem depender de Vault/Sealed Secrets/External Secrets Operator (fora de escopo do hackathon).
 resource "kubernetes_namespace" "solidarytech" {
@@ -142,7 +142,7 @@ resource "kubernetes_secret" "rds_admin" {
     namespace = kubernetes_namespace.solidarytech[0].metadata[0].name
   }
   data = {
-    # aponta para o banco `ngo_db` (o único criado automaticamente pelo RDS) — usado só
+    # aponta para o banco `ngo_db` (o único criado automaticamente pelo RDS) - usado só
     # pelo Job de PreSync do donation-service para dar `CREATE DATABASE donation_db`.
     ADMIN_DATABASE_URL = "postgres://${var.rds_master_username}:${var.rds_master_password}@${module.rds.address}:${module.rds.port}/ngo_db"
   }
@@ -169,7 +169,7 @@ resource "kubernetes_namespace" "observability" {
 
 # Credenciais do APM (Datadog) consumidas pelo OTel Collector (repo solidarytech-gitops,
 # observability/otel-collector). Opcionais/vazias por padrão: o cluster sobe e os outros
-# exporters (debug/prometheus) continuam funcionando mesmo sem conta de APM ainda criada —
+# exporters (debug/prometheus) continuam funcionando mesmo sem conta de APM ainda criada -
 # preencha via TF_VAR_* quando tiver a conta.
 resource "kubernetes_secret" "apm_credentials" {
   count = var.enable_argocd_bootstrap ? 1 : 0
@@ -185,7 +185,7 @@ resource "kubernetes_secret" "apm_credentials" {
 
 # Bootstrap do GitOps: instala o ArgoCD e aponta para o app-of-apps do repo gitops.
 # A partir daqui, TUDO que roda no cluster (observabilidade, os 3 serviços, healer-service,
-# Velero) é sincronizado pelo próprio ArgoCD lendo o repositório Git — não há mais nenhum
+# Velero) é sincronizado pelo próprio ArgoCD lendo o repositório Git - não há mais nenhum
 # outro `helm install`/`kubectl apply` de infraestrutura de aplicação feito via Terraform.
 module "argocd" {
   count  = var.enable_argocd_bootstrap ? 1 : 0

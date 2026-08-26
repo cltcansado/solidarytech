@@ -1,4 +1,4 @@
-# ElastiCache Redis — provisionado para atender o item "Amazon ElastiCache" da fundação de
+# ElastiCache Redis - provisionado para atender o item "Amazon ElastiCache" da fundação de
 # infra, disponível como camada de cache. Deliberadamente NÃO usado ainda no caminho crítico
 # do donation-service nesta entrega: introduzir uma nova
 # dependência no Hot Path sem um ciclo de teste de carga dedicado é um risco de confiabilidade

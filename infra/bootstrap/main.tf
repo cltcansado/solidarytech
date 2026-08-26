@@ -1,7 +1,7 @@
 # Bootstrap do backend remoto de state (S3 + DynamoDB lock).
 #
-# Este módulo é aplicado UMA ÚNICA VEZ, com state local (propositalmente — não dá para
-# guardar o state do backend dentro do próprio backend que ele cria). Depois de aplicado,
+# Este módulo é aplicado UMA ÚNICA VEZ, com state local: não dá para guardar o state do
+# backend dentro do próprio backend que ele cria. Depois de aplicado,
 # `infra/envs/production` referencia o bucket/tabela criados aqui via `backend "s3"`.
 #
 # Uso:
@@ -56,7 +56,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "tf_state" {
   bucket = aws_s3_bucket.tf_state.id
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256" # SSE-S3 (não KMS custom — indisponível na AWS Academy)
+      sse_algorithm = "AES256" # SSE-S3 (não KMS custom - indisponível na AWS Academy)
     }
   }
 }

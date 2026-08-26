@@ -8,7 +8,7 @@ os.environ.setdefault("OTEL_SDK_DISABLED", "true")
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # app.py abre um SimpleConnectionPool real na importação do módulo (mesmo comportamento do
-# código-base original) — sem banco de verdade disponível no ambiente de teste, isso derrubaria
+# código-base original) - sem banco de verdade disponível no ambiente de teste, isso derrubaria
 # o processo (SystemExit) antes mesmo do teste rodar. Substituímos a classe ANTES do primeiro
 # `import app` para o teste unitário não depender de um Postgres real; os testes trocam
 # `app_module.pool` por um fake funcional logo em seguida (ver _build_client).

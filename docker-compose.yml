@@ -1,4 +1,4 @@
-# Ambiente local completo da SolidaryTech — permite rodar e validar os 3 microsserviços
+# Ambiente local completo da SolidaryTech - permite rodar e validar os 3 microsserviços
 # e a stack de observabilidade SEM depender de AWS. Usado na Etapa E1 (validação local)
 # e como "golden path" de desenvolvimento antes de qualquer coisa ir para o cluster via GitOps.
 #

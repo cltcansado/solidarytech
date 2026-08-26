@@ -1,4 +1,4 @@
-name: CI — donation-service
+name: CI - donation-service
 
 on:
   push:
@@ -33,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Trivy — filesystem/dependência (SCA)
+      - name: Trivy - filesystem/dependência (SCA)
         uses: aquasecurity/trivy-action@v0.24.0
         with:
           scan-type: fs
@@ -42,7 +42,7 @@ jobs:
           exit-code: "1"
           trivyignores: apps/donation-service/.trivyignore
 
-      - name: SonarCloud — SAST
+      - name: SonarCloud - SAST
         if: ${{ env.SONAR_TOKEN_SET == 'true' }}
         uses: SonarSource/sonarcloud-github-action@master
         env:
@@ -78,7 +78,7 @@ jobs:
       - name: Build da imagem
         run: docker build -t "$IMAGE:${{ steps.meta.outputs.tag }}" apps/donation-service
 
-      - name: Trivy — imagem de container
+      - name: Trivy - imagem de container
         uses: aquasecurity/trivy-action@v0.24.0
         with:
           image-ref: "${{ env.IMAGE }}:${{ steps.meta.outputs.tag }}"

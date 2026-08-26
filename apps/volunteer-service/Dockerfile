@@ -2,7 +2,7 @@ FROM python:3.11-slim AS builder
 
 WORKDIR /install
 COPY requirements.txt .
-# --target (não --prefix): ver justificativa em apps/ngo-service/Dockerfile — evita a
+# --target (não --prefix): ver justificativa em apps/ngo-service/Dockerfile - evita a
 # incompatibilidade site-packages (builder) vs dist-packages (Python de sistema Debian
 # do distroless runtime).
 RUN pip install --no-cache-dir --target=/deps -r requirements.txt

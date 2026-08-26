@@ -1,4 +1,4 @@
-name: Terraform — infra/envs/production
+name: Terraform - infra/envs/production
 
 on:
   pull_request:
@@ -53,7 +53,7 @@ jobs:
         if: github.event_name == 'pull_request' || inputs.action == 'plan'
         run: terraform plan -no-color -out=tfplan
 
-      # `apply`/`destroy` só rodam via workflow_dispatch manual — infraestrutura de nuvem
+      # `apply`/`destroy` só rodam via workflow_dispatch manual - infraestrutura de nuvem
       # real não é criada/destruída automaticamente por um merge, mesmo respeitando a
       # "regra de ouro" de tudo-via-IaC.
       - name: Terraform Apply

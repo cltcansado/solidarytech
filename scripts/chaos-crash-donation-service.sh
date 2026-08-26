@@ -9,7 +9,7 @@
 # kube_pod_container_status_restarts_total -> dispara DonationServiceCrashLooping.
 #
 # O script reverte a probe automaticamente ao final; a partir daí, o próprio Kubernetes
-# (kubelet) já mantém o container saudável — o `healer-service` entra no fluxo assim que o
+# (kubelet) já mantém o container saudável - o `healer-service` entra no fluxo assim que o
 # Alertmanager processa o alerta (latência normal de scrape+avaliação, não instantânea).
 #
 # Pré-requisito: kubeconfig apontando para o cluster (aws eks update-kubeconfig).

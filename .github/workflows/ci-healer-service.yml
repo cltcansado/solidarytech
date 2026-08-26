@@ -1,4 +1,4 @@
-name: CI — healer-service
+name: CI - healer-service
 
 on:
   push:
@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Trivy — filesystem/dependência (SCA)
+      - name: Trivy - filesystem/dependência (SCA)
         uses: aquasecurity/trivy-action@v0.24.0
         with:
           scan-type: fs
@@ -49,8 +49,8 @@ jobs:
       - name: Build da imagem
         run: docker build -t "$IMAGE:${{ steps.meta.outputs.tag }}" apps/healer-service
 
-      - name: Trivy — imagem de container (relatório, não bloqueia)
-        # exit-code 0 de propósito: ver justificativa em ci-ngo-service.yml (mesma base
+      - name: Trivy - imagem de container (relatório, não bloqueia)
+        # exit-code 0 intencional: ver justificativa em ci-ngo-service.yml (mesma base
         # distroless, mesmos achados são pacotes de SO fora do nosso controle).
         uses: aquasecurity/trivy-action@v0.24.0
         with:

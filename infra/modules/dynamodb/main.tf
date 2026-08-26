@@ -1,4 +1,4 @@
-# PAY_PER_REQUEST (on-demand): decisão de FinOps deliberada — carga do volunteer-service é
+# PAY_PER_REQUEST (on-demand): decisão de FinOps deliberada - carga do volunteer-service é
 # imprevisível (picos de acesso citados no enunciado) e não temos histórico de tráfego para
 # dimensionar capacidade provisionada com segurança. Reavaliar para provisioned+autoscaling
 # só depois de observar padrão real de uso por >=2 semanas (ver docs/FINOPS-FORECAST.md).

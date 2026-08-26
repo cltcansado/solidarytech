@@ -1,4 +1,4 @@
-# Fila principal + DLQ. O código-base original não tinha DLQ (fire-and-forget) — adicionada
+# Fila principal + DLQ. O código-base original não tinha DLQ (fire-and-forget) - adicionada
 # aqui como reforço de resiliência para o Hot Path (donation-service), citada em
 # docs/SRE-SLI-SLO-SLA.md como parte da estratégia de confiabilidade.
 

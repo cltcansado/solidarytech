@@ -57,7 +57,7 @@ variable "node_max_size" {
 }
 
 variable "spot_node_instance_types" {
-  description = "Node group Spot para cargas não-críticas (ngo-service/volunteer-service) — recomendação FinOps"
+  description = "Node group Spot para cargas não-críticas (ngo-service/volunteer-service) - recomendação FinOps"
   type        = list(string)
   default     = ["t3.medium", "t3a.medium"]
 }

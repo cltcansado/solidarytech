@@ -4,7 +4,7 @@ Bootstrap de OpenTelemetry (traces) para os serviços Flask.
 Exporta sempre via OTLP/gRPC para o OpenTelemetry Collector rodando como
 DaemonSet/Service no cluster (endpoint padrão: otel-collector.observability.svc:4317).
 O Collector é quem decide para onde os dados vão de fato (Datadog, New Relic,
-Tempo, etc.) — a aplicação nunca fala direto com o vendor de APM.
+Tempo, etc.) - a aplicação nunca fala direto com o vendor de APM.
 """
 import logging
 import os

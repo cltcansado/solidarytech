@@ -1,4 +1,4 @@
-name: CI — ngo-service
+name: CI - ngo-service
 
 on:
   push:
@@ -32,12 +32,12 @@ jobs:
     env:
       # o validador estrito do workflow_dispatch (dispatch via API) rejeita `secrets` referenciado
       # direto num `if:` de step ("Unrecognized named-value: 'secrets'") mesmo sendo válido em
-      # runs disparadas por push — indireciona por env: para funcionar nos dois gatilhos.
+      # runs disparadas por push - indireciona por env: para funcionar nos dois gatilhos.
       SONAR_TOKEN_SET: ${{ secrets.SONAR_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Trivy — filesystem/dependência (SCA)
+      - name: Trivy - filesystem/dependência (SCA)
         uses: aquasecurity/trivy-action@v0.24.0
         with:
           scan-type: fs
@@ -45,7 +45,7 @@ jobs:
           severity: CRITICAL,HIGH
           exit-code: "1"
 
-      - name: SonarCloud — SAST
+      - name: SonarCloud - SAST
         if: ${{ env.SONAR_TOKEN_SET == 'true' }} # pula sem quebrar o pipeline enquanto a conta Sonar não estiver configurada
         uses: SonarSource/sonarcloud-github-action@master
         env:
@@ -83,8 +83,8 @@ jobs:
       - name: Build da imagem
         run: docker build -t "$IMAGE:${{ steps.meta.outputs.tag }}" apps/ngo-service
 
-      - name: Trivy — imagem de container (relatório, não bloqueia)
-        # exit-code 0 de propósito: os achados aqui são pacotes de SO herdados da imagem
+      - name: Trivy - imagem de container (relatório, não bloqueia)
+        # exit-code 0 intencional: os achados aqui são pacotes de SO herdados da imagem
         # base gcr.io/distroless/python3-debian12 (mantida pelo Google, fora do nosso
         # controle via requirements.txt) -- bloquear o pipeline por isso teria o mesmo efeito
         # de nunca conseguir buildar até o Google atualizar a base. O gate que bloqueia de
