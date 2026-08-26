@@ -46,7 +46,7 @@ export const options = {
 export default function () {
   const payload = JSON.stringify({
     ngo_id: Math.ceil(Math.random() * 2),
-    amount: (Math.random() * 500 + 10).toFixed(2),
+    amount: Number((Math.random() * 500 + 10).toFixed(2)),
     donor_name: `Doador k6 ${__VU}-${__ITER}`,
   });
 
