@@ -192,7 +192,7 @@ module "argocd" {
   source = "../../modules/argocd"
 
   gitops_repo_url  = var.gitops_repo_url
-  gitops_root_path = "gitops/argocd/apps"
+  gitops_root_path = "argocd/apps"
   target_revision  = var.gitops_target_revision
   git_repo_token   = var.git_repo_token
 

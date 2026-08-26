@@ -45,6 +45,7 @@ kubeconfig*
 
 # Notas de execução/roteiro pessoais — não fazem parte do entregável
 /env/
+infra/envs/production/apply-*.log
 
 # Cache local do provider Helm (Terraform) - isolado por projeto, ver infra/envs/production/versions.tf
 .helm/
