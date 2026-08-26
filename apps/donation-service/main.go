@@ -82,10 +82,18 @@ func main() {
 	}
 	db.SetMaxOpenConns(10)
 	db.SetMaxIdleConns(5)
+	// Não usa log.Fatal aqui de propósito: se o RDS estiver temporariamente indisponível no
+	// boot (failover, manutenção, restart do próprio banco), o processo ainda sobe e responde
+	// HTTP — /health reporta "degraded" (503) até a conexão voltar, e o readinessProbe tira o
+	// pod do Service sem matar o container. Antes, um log.Fatal aqui criava um efeito cascata:
+	// o livenessProbe (que também batia em /health) matava pods saudáveis por causa do banco,
+	// e o pod novo nunca conseguia nem terminar de subir enquanto o banco estivesse fora —
+	// CrashLoopBackOff permanente pela duração inteira da indisponibilidade do RDS.
 	if err := db.Ping(); err != nil {
-		log.Fatalf("Erro ao conectar ao banco de dados: %v", err)
+		log.Printf("Aviso: banco de dados inacessível no boot (%v) — subindo mesmo assim, /health reportará degraded", err)
+	} else {
+		log.Println("Conectado ao PostgreSQL (donation-service).")
 	}
-	log.Println("Conectado ao PostgreSQL (donation-service).")
 
 	var sqsSvc *sqs.SQS
 	queueURL := os.Getenv("AWS_SQS_URL")
@@ -100,6 +108,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/health", app.HealthHandler)
+	mux.HandleFunc("/live", app.LiveHandler)
 	mux.Handle("/donations", metricsMiddleware("/donations", http.HandlerFunc(app.DonationHandler)))
 	mux.Handle("/metrics", promhttp.Handler())
 
@@ -131,6 +140,9 @@ func (w *statusWriter) WriteHeader(code int) {
 	w.ResponseWriter.WriteHeader(code)
 }
 
+// HealthHandler é o alvo do readinessProbe: reflete a saúde real das dependências (banco).
+// Um 503 aqui tira o pod do Service — não deve, e não é, usado como livenessProbe (ver
+// LiveHandler): matar o processo não resolve o banco estar fora, só causa restart-storm.
 func (a *App) HealthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := a.DB.Ping(); err != nil {
@@ -138,6 +150,14 @@ func (a *App) HealthHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"status":"degraded","service":"donation-service"}`))
 		return
 	}
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"status":"ok","service":"donation-service"}`))
+}
+
+// LiveHandler é o alvo do livenessProbe: só confirma que o processo HTTP está respondendo,
+// sem checar dependências externas.
+func (a *App) LiveHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"status":"ok","service":"donation-service"}`))
 }
