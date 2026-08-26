@@ -1,5 +1,6 @@
 Flask==3.0.3
 Werkzeug==3.0.3
+setuptools<81
 psycopg2-binary==2.9.5
 gunicorn==22.0.0
 python-dotenv==0.21.0
