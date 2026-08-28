@@ -24,7 +24,10 @@ set -euo pipefail
 
 NAMESPACE="${NAMESPACE:-solidarytech}"
 DEPLOYMENT="donation-service"
-CRASHES="${CRASHES:-6}"          # nº de crashes no mesmo pod (> 3 dispara o alerta)
+# nº de crashes no mesmo pod. > 3 restarts em 10min já satisfaz o alerta; 5 dá folga para
+# o alerta sustentar o `for: 2m`. Se o healer agir no meio da bateria, as chamadas restantes
+# viram no-op (o pod alvo já foi substituído pelo rollout) - o teste continua válido.
+CRASHES="${CRASHES:-5}"
 LOCAL_PORT="${LOCAL_PORT:-18082}"
 
 ts() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
