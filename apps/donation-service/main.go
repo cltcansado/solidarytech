@@ -112,6 +112,17 @@ func main() {
 	mux.Handle("/donations", metricsMiddleware("/donations", http.HandlerFunc(app.DonationHandler)))
 	mux.Handle("/metrics", promhttp.Handler())
 
+	// Endpoint de caos - só registrado quando CHAOS_ENDPOINTS_ENABLED=true. Existe para a
+	// demonstração de self-healing/MTTR (docs/SRE-SLI-SLO-SLA.md): encerra o processo, o
+	// container reinicia NO MESMO pod (sem recriar o pod, sem alterar o Deployment - portanto
+	// sem disputa com o selfHeal do ArgoCD), os restarts se acumulam em
+	// kube_pod_container_status_restarts_total e disparam o alerta DonationServiceCrashLooping,
+	// que o Alertmanager encaminha ao healer-service. NUNCA habilitar em produção real.
+	if os.Getenv("CHAOS_ENDPOINTS_ENABLED") == "true" {
+		mux.HandleFunc("/debug/crash", crashHandler)
+		log.Println("AVISO: /debug/crash habilitado (CHAOS_ENDPOINTS_ENABLED=true) - use apenas em ambiente de demonstração")
+	}
+
 	handler := otelhttp.NewHandler(mux, "donation-service")
 
 	log.Printf("donation-service rodando na porta %s", port)
@@ -160,6 +171,19 @@ func (a *App) LiveHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"status":"ok","service":"donation-service"}`))
+}
+
+// crashHandler encerra o processo com exit(1) logo após responder. Registrado só quando
+// CHAOS_ENDPOINTS_ENABLED=true (ver main). Usado pelo scripts/chaos-crash-donation-service.sh.
+func crashHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("CHAOS: /debug/crash acionado - encerrando o processo com exit(1)")
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"status":"crashing"}`))
+	go func() {
+		time.Sleep(150 * time.Millisecond) // garante o flush da resposta antes de sair
+		os.Exit(1)
+	}()
 }
 
 func (a *App) DonationHandler(w http.ResponseWriter, r *http.Request) {
