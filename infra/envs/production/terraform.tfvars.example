@@ -17,3 +17,7 @@ velero_bucket_suffix = "<algo-unico-ex-conta-aws-ou-rm-do-grupo>"
 # No primeiro apply, o cluster EKS ainda não existe -> providers kubernetes/helm falhariam
 # ao tentar autenticar. Rode a primeira vez com false, depois mude para true:
 enable_argocd_bootstrap = false
+
+# Opcional (demo/gravação): expõe a UI do ArgoCD num ELB. Deixe "ClusterIP" no dia a dia.
+# argocd_server_service_type = "LoadBalancer"
+# argocd_lb_source_ranges    = ["SEU.IP.PUBLICO/32"]
