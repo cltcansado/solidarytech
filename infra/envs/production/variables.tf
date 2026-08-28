@@ -81,3 +81,15 @@ variable "enable_argocd_bootstrap" {
   type        = bool
   default     = true
 }
+
+variable "argocd_server_service_type" {
+  description = "ClusterIP (padrão) ou LoadBalancer (para a gravação da demo - sobe um ELB)."
+  type        = string
+  default     = "ClusterIP"
+}
+
+variable "argocd_lb_source_ranges" {
+  description = "CIDRs liberados no ELB do ArgoCD quando argocd_server_service_type=LoadBalancer (ex: [\"1.2.3.4/32\"])."
+  type        = list(string)
+  default     = []
+}

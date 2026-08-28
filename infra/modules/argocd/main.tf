@@ -51,9 +51,13 @@ resource "helm_release" "argocd" {
 
   values = [yamlencode({
     server = {
-      # ClusterIP + `kubectl port-forward` ou Ingress podem ser usados para acessar a UI;
-      # não expomos LoadBalancer público por padrão (custo + superfície de ataque).
-      service = { type = "ClusterIP" }
+      # Padrão ClusterIP (acesso via `kubectl port-forward`) - sem custo nem exposição.
+      # Para a gravação da demo, `server_service_type = "LoadBalancer"` +
+      # `server_lb_source_ranges` (restrito ao IP de quem grava) sobem um ELB Classic.
+      service = merge(
+        { type = var.server_service_type },
+        length(var.server_lb_source_ranges) > 0 ? { loadBalancerSourceRanges = var.server_lb_source_ranges } : {}
+      )
     }
     configs = {
       params = {

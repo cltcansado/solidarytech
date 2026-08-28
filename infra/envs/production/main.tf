@@ -196,5 +196,8 @@ module "argocd" {
   target_revision  = var.gitops_target_revision
   git_repo_token   = var.git_repo_token
 
+  server_service_type     = var.argocd_server_service_type
+  server_lb_source_ranges = var.argocd_lb_source_ranges
+
   depends_on = [module.eks]
 }
