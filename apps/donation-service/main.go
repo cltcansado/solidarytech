@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -143,7 +144,10 @@ func metricsMiddleware(path string, next http.Handler) http.Handler {
 		next.ServeHTTP(sw, r)
 		elapsed := time.Since(start).Seconds()
 		httpRequestDuration.WithLabelValues(r.Method, path).Observe(elapsed)
-		httpRequestsTotal.WithLabelValues(r.Method, path, http.StatusText(sw.status)).Inc()
+		// código numérico ("200","500"...) - mesma convenção do ngo/volunteer-service e o que
+		// os alertas de SLO (status=~"5..") e os dashboards esperam. Antes era http.StatusText
+		// ("Internal Server Error"), que nunca casava com o regex do alerta HighErrorRate.
+		httpRequestsTotal.WithLabelValues(r.Method, path, strconv.Itoa(sw.status)).Inc()
 	})
 }
 
