@@ -36,6 +36,10 @@ type App struct {
 	SqsQueueURL string
 }
 
+// chaosEnabled liga os endpoints/gatilhos de caos usados só na demo de self-healing
+// (/debug/crash e o header X-Chaos: error-500). Nunca "true" em produção real.
+var chaosEnabled = os.Getenv("CHAOS_ENDPOINTS_ENABLED") == "true"
+
 // --- Golden Metrics: Latência, Tráfego e Taxa de Erro (SLIs do donation-service) ---
 var (
 	httpRequestsTotal = promauto.NewCounterVec(prometheus.CounterOpts{
@@ -112,15 +116,17 @@ func main() {
 	mux.Handle("/donations", metricsMiddleware("/donations", http.HandlerFunc(app.DonationHandler)))
 	mux.Handle("/metrics", promhttp.Handler())
 
-	// Endpoint de caos - só registrado quando CHAOS_ENDPOINTS_ENABLED=true. Existe para a
-	// demonstração de self-healing/MTTR (docs/SRE-SLI-SLO-SLA.md): encerra o processo, o
-	// container reinicia NO MESMO pod (sem recriar o pod, sem alterar o Deployment - portanto
-	// sem disputa com o selfHeal do ArgoCD), os restarts se acumulam em
-	// kube_pod_container_status_restarts_total e disparam o alerta DonationServiceCrashLooping,
-	// que o Alertmanager encaminha ao healer-service. NUNCA habilitar em produção real.
-	if os.Getenv("CHAOS_ENDPOINTS_ENABLED") == "true" {
+	// Endpoints de caos - só registrados quando CHAOS_ENDPOINTS_ENABLED=true. Existem para a
+	// demonstração de self-healing/MTTR (docs/SRE-SLI-SLO-SLA.md):
+	//  - /debug/crash: encerra o processo -> container reinicia no MESMO pod (sem recriar o
+	//    pod, sem alterar o Deployment, sem disputa com o selfHeal do ArgoCD) -> os restarts
+	//    se acumulam e disparam o alerta DonationServiceCrashLooping.
+	//  - header `X-Chaos: error-500` em POST /donations: força um 500 -> a taxa de erro 5xx
+	//    do SLI de disponibilidade sobe e dispara o alerta DonationServiceHighErrorRate.
+	// Os dois alertas o Alertmanager encaminha ao healer-service. NUNCA habilitar em prod real.
+	if chaosEnabled {
 		mux.HandleFunc("/debug/crash", crashHandler)
-		log.Println("AVISO: /debug/crash habilitado (CHAOS_ENDPOINTS_ENABLED=true) - use apenas em ambiente de demonstração")
+		log.Println("AVISO: endpoints de caos habilitados (CHAOS_ENDPOINTS_ENABLED=true) - use apenas em demonstração")
 	}
 
 	handler := otelhttp.NewHandler(mux, "donation-service")
@@ -194,6 +200,13 @@ func (a *App) DonationHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		ctx, span := tracer.Start(ctx, "create_donation")
 		defer span.End()
+
+		// Gatilho de caos p/ a demo do alerta de taxa de erro (só com CHAOS_ENDPOINTS_ENABLED).
+		if chaosEnabled && r.Header.Get("X-Chaos") == "error-500" {
+			donationsProcessedTotal.WithLabelValues("CHAOS_ERROR").Inc()
+			http.Error(w, `{"error":"Erro interno (chaos)"}`, http.StatusInternalServerError)
+			return
+		}
 
 		var d Donation
 		if err := json.NewDecoder(r.Body).Decode(&d); err != nil {

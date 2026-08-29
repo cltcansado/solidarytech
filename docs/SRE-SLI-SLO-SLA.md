@@ -82,8 +82,9 @@ etapa 1 - detecção humana e triagem, não pela correção em si, que leva segu
 ### 7.2 Com a automação implementada nesta entrega
 
 1. `PrometheusRule` (`solidarytech-gitops/observability/extras/slo-donation-service.yaml`) avalia a cada
-   30s e detecta `DonationServiceHighErrorRate` / `HighLatency` / `CrashLooping` em até 5
-   minutos (`for: 5m`, para evitar falso positivo em pico transitório).
+   30s e detecta `DonationServiceHighErrorRate` / `CrashLooping` (`for: 2m`) ou `HighLatency`
+   (`for: 5m` - latência é mais ruidosa e tolera janela maior). O `for` evita reagir a um pico
+   transitório sem virar espera excessiva no Hot Path.
 2. Alertmanager despacha o alerta via `webhook_configs` para o `healer-service`
    (`apps/healer-service/app.py`) em segundos.
 3. `healer-service` executa `rollout restart` do Deployment via API do Kubernetes
@@ -91,10 +92,10 @@ etapa 1 - detecção humana e triagem, não pela correção em si, que leva segu
 4. Toda ação fica registrada na métrica `healer_actions_total` (correlacionável no dashboard
    com o pico de restarts) - dá rastreabilidade completa de quando o auto-healing agiu.
 
-**MTTR estimado (automatizado): ~5-6 minutos**, dominado quase inteiramente pelo `for: 5m` de
-confirmação do alerta (deliberado, para não reagir a ruído) - a ação de remediação em si leva
-segundos. **Redução de MTTR de ~70-80%** frente ao cenário manual, e sem depender de haver
-alguém de plantão acordado.
+**MTTR estimado (automatizado): ~3-4 minutos**, dominado pela janela de confirmação do alerta
+(`for: 2m` + ~1-1,5min para a métrica cruzar o limiar) - a ação de remediação em si leva
+segundos. **Redução de MTTR de ~75-85%** frente ao cenário manual (15-30min), e sem depender de
+haver alguém de plantão acordado.
 
 > Evidência prática: `scripts/chaos-crash-donation-service.sh` provoca o cenário de
 > CrashLoopBackOff sob demanda; o tempo entre o início do caos e o log
